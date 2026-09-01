@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-flyvora}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flyvora_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-flyvora}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-flyvora}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-flyvora}:${POSTGRES_PASSWORD:-flyvora_dev_password}@db:5432/${POSTGRES_DB:-flyvora}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+      - ./data:/app/data
+      - ./scripts:/app/scripts
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
