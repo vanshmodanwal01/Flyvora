@@ -1,3 +1,29 @@
+const home = document.getElementById("home");
+const route = document.getElementById("route");
+const lead = document.getElementById("lead");
+const airline = document.getElementById("airline");
+const quality = document.getElementById("quality");
+
+home.addEventListener("click", () => {
+  window.location.href = "/Frontend/Overview/index.html";
+});
+
+route.addEventListener("click", () => {
+  window.location.href = "/Frontend/Route_Heatmap+Trends/routeheatmap.html";
+});
+
+lead.addEventListener("click", () => {
+  window.location.href = "/Frontend/Lead-Time/lead-time.html";
+});
+
+airline.addEventListener("click", () => {
+  window.location.href = "/Frontend/Aireline/airline-comparison.html";
+});
+
+quality.addEventListener("click", () => {
+  window.location.href = "/Frontend/Data-quality/data-quality.html";
+});
+
 /**
  * data-quality.js
  * Enhanced with Chart.js animations, staggered list entry, count-up metric numbers,

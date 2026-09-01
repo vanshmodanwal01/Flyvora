@@ -1,3 +1,29 @@
+const home = document.getElementById("home");
+const route = document.getElementById("route");
+const lead = document.getElementById("lead");
+const airline = document.getElementById("airline");
+const quality = document.getElementById("quality");
+
+home.addEventListener("click", () => {
+  window.location.href = "/Frontend/Overview/index.html";
+});
+
+route.addEventListener("click", () => {
+  window.location.href = "/Frontend/Route_Heatmap+Trends/routeheatmap.html";
+});
+
+lead.addEventListener("click", () => {
+  window.location.href = "/Frontend/Lead-Time/lead-time.html";
+});
+
+airline.addEventListener("click", () => {
+  window.location.href = "/Frontend/Aireline/airline-comparison.html";
+});
+    
+quality.addEventListener("click", () => {
+  window.location.href = "/Frontend/Data-quality/data-quality.html";
+});
+
 Chart.defaults.color = "#94a3b8";
 Chart.defaults.borderColor = "rgba(255,255,255,0.08)";
 Chart.defaults.font.family = "inherit";
