@@ -27,14 +27,30 @@ class FareObservation(Base):
     airline_id: Mapped[int] = mapped_column(ForeignKey("airlines.id"), index=True)
 
     travel_class: Mapped[TravelClass] = mapped_column(Enum(TravelClass, name="travel_class_enum"))
+    # observation_date = when the fare was searched/quoted (kept from Phase 1;
+    # every existing query and dashboard endpoint already depends on this
+    # name, so it stays — think of it as "search_date" under a legacy name).
     observation_date: Mapped[date] = mapped_column(Date, index=True)
     days_to_departure: Mapped[int] = mapped_column(SmallInteger, index=True)
     price: Mapped[float] = mapped_column(Numeric(10, 2))
     currency: Mapped[str] = mapped_column(String(3), default="INR")
 
-    # "csv" today; "api" once Phase 2 lands a live source. Keeps the schema
-    # source-agnostic without needing a migration when that happens.
-    source: Mapped[str] = mapped_column(String(20), default="csv")
+    # --- Added for frontend-PRD field parity (Frontend/PRD.md) ---
+    # All nullable: Phase 1 CSV data and this dataset don't populate every
+    # field, and we never fabricate a value a source didn't provide.
+    travel_date: Mapped[date | None] = mapped_column(Date, nullable=True, index=True)
+    base_fare: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    tax: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    fees: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    availability: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
+    # collected_at is a real timestamp (vs. observation_date's day-granularity)
+    # so that same-day, different-time live collections are never treated as
+    # duplicates of each other — see the historical-observation rule.
+    collected_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # "csv" (Phase 1 synthetic), "csv-historical-real" (this dataset), "api"
+    # once Phase 2 lands a live source. Keeps the schema source-agnostic.
+    source: Mapped[str] = mapped_column(String(30), default="csv")
 
     ingestion_job_id: Mapped[int] = mapped_column(ForeignKey("ingestion_jobs.id"), index=True)
 

@@ -32,6 +32,9 @@ from app.repositories.airline_repo import get_or_create_airline
 from app.utils.hashing import compute_dedup_hash
 
 REQUIRED_COLUMNS = {"date", "origin", "destination", "airline", "days_to_departure", "price"}
+# Optional PRD-parity columns: read when present, left NULL when absent —
+# never fabricated to fill a gap.
+OPTIONAL_COLUMNS = {"travel_date", "base_fare", "tax", "fees", "availability"}
 
 # Known airline aliases -> (iata_code, canonical_name). Anything not found
 # here still ingests fine — it's created as a new airline on the fly using
@@ -119,6 +122,35 @@ def _validate_and_clean_row(row: dict) -> RowResult:
 
     currency = str(row.get("currency", "INR")).strip().upper() or "INR"
 
+    # --- Optional PRD-parity fields ---
+    travel_date = None
+    if str(row.get("travel_date", "")).strip():
+        try:
+            travel_date = pd.to_datetime(row["travel_date"]).date()
+        except (ValueError, TypeError):
+            travel_date = None  # malformed optional field: drop it, don't fail the row
+
+    def _optional_float(key: str) -> float | None:
+        raw = str(row.get(key, "")).strip()
+        if not raw:
+            return None
+        try:
+            return float(raw.replace(",", ""))
+        except ValueError:
+            return None
+
+    base_fare = _optional_float("base_fare")
+    tax = _optional_float("tax")
+    fees = _optional_float("fees")
+
+    availability = None
+    raw_avail = str(row.get("availability", "")).strip()
+    if raw_avail:
+        try:
+            availability = int(float(raw_avail))
+        except ValueError:
+            availability = None
+
     return RowResult(True, data={
         "observation_date": obs_date,
         "origin": origin,
@@ -129,10 +161,15 @@ def _validate_and_clean_row(row: dict) -> RowResult:
         "price": price,
         "travel_class": travel_class,
         "currency": currency,
+        "travel_date": travel_date,
+        "base_fare": base_fare,
+        "tax": tax,
+        "fees": fees,
+        "availability": availability,
     })
 
 
-def run_ingestion(db: Session, file_path: str) -> dict:
+def run_ingestion(db: Session, file_path: str, source_label: str = "csv") -> dict:
     file_name = os.path.basename(file_path)
     job = data_quality_repo.create_job(db, file_name=file_name)
     db.commit()
@@ -207,13 +244,14 @@ def run_ingestion(db: Session, file_path: str) -> dict:
             observation_date=r["observation_date"].isoformat(),
             days_to_departure=r["days_to_departure"],
             price=r["price"],
-            source="csv",
+            source=source_label,
         )
         if dedup_hash in seen_hashes_this_run:
             counts["duplicate"] += 1
             continue
         seen_hashes_this_run.add(dedup_hash)
 
+        now = datetime.now(timezone.utc)
         insertable.append({
             "route_id": route_cache[route_key],
             "airline_id": airline_cache[r["airline_code"]],
@@ -222,20 +260,34 @@ def run_ingestion(db: Session, file_path: str) -> dict:
             "days_to_departure": r["days_to_departure"],
             "price": r["price"],
             "currency": r["currency"],
-            "source": "csv",
+            "source": source_label,
             "ingestion_job_id": job.id,
             "dedup_hash": dedup_hash,
-            "created_at": datetime.now(timezone.utc),
+            "created_at": now,
+            "travel_date": r.get("travel_date"),
+            "base_fare": r.get("base_fare"),
+            "tax": r.get("tax"),
+            "fees": r.get("fees"),
+            "availability": r.get("availability"),
+            "collected_at": now,
         })
 
     db.flush()
 
+    # Batch the insert: a single 300K-row statement is what actually caused
+    # an OOM kill in testing (SQLAlchemy has to render every row's
+    # parameters into one statement before it ever reaches Postgres).
+    # Chunking avoids that without changing the ON CONFLICT semantics.
     inserted_count = 0
-    if insertable:
-        stmt = pg_insert(FareObservation).values(insertable).on_conflict_do_nothing(index_elements=["dedup_hash"])
+    BATCH_SIZE = 5000
+    for start in range(0, len(insertable), BATCH_SIZE):
+        chunk = insertable[start:start + BATCH_SIZE]
+        stmt = pg_insert(FareObservation).values(chunk).on_conflict_do_nothing(index_elements=["dedup_hash"])
         result = db.execute(stmt)
-        inserted_count = result.rowcount if result.rowcount is not None else 0
-        counts["duplicate"] += len(insertable) - inserted_count
+        chunk_inserted = result.rowcount if result.rowcount is not None else 0
+        inserted_count += chunk_inserted
+        counts["duplicate"] += len(chunk) - chunk_inserted
+        db.commit()
 
     counts["valid"] = inserted_count
 
