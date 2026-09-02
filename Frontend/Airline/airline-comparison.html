@@ -16,6 +16,7 @@
                 opacity: 0;
                 transform: translateY(-12px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -27,6 +28,7 @@
                 opacity: 0;
                 transform: translateY(16px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -34,9 +36,12 @@
         }
 
         @keyframes pulseGlow {
-            0%, 100% {
+
+            0%,
+            100% {
                 box-shadow: 0 0 15px rgba(34, 211, 238, 0.08);
             }
+
             50% {
                 box-shadow: 0 0 25px rgba(34, 211, 238, 0.2);
             }
@@ -55,28 +60,15 @@
         }
 
         /* Base element transitions */
-        select, button, a, div.chart-card, div[id^="metric-"] {
+        select,
+        button,
+        a,
+        div.chart-card,
+        div[id^="metric-"] {
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* ---------- Tablets & small laptops ---------- */
-        @media (max-width: 1024px) {
-            #site-header {
-                padding-left: 1.25rem;
-                padding-right: 1.25rem;
-            }
-
-            #primary-nav ul {
-                gap: 0.25rem;
-            }
-
-            #primary-nav a {
-                padding-left: 0.75rem;
-                padding-right: 0.75rem;
-            }
-        }
-
-        /* ---------- Mobile phones ---------- */
         @media (max-width: 640px) {
             #site-header {
                 flex-direction: column;
@@ -88,11 +80,22 @@
 
             #primary-nav {
                 width: 100%;
-                overflow-x: auto;
+                /* Allow child elements to wrap instead of scrolling horizontally */
+                overflow-x: visible;
             }
 
             #primary-nav ul {
-                width: max-content;
+                /* Set width to full container and wrap items */
+                width: 100%;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.375rem;
+            }
+
+            /* Adjust padding and text size so menu links fit neatly on small screens */
+            #primary-nav a {
+                padding: 0.375rem 0.625rem;
+                font-size: 0.75rem;
             }
 
             #brand-title {
@@ -104,34 +107,12 @@
                 padding-right: 1rem;
             }
 
-            #key-metrics-grid {
+            #route-summary-kpi-grid {
                 gap: 0.75rem;
-                padding: 0.5rem;
             }
 
             .metric-value {
                 font-size: 1.5rem;
-            }
-        }
-
-        /* ---------- Small phones ---------- */
-        @media (max-width: 400px) {
-            #brand-title span {
-                display: block;
-                margin-left: 0;
-            }
-
-            .chart-card h2 {
-                font-size: 0.8rem;
-            }
-        }
-
-        /* ---------- Large desktop / wide monitors ---------- */
-        @media (min-width: 1536px) {
-            #dashboard-main {
-                max-width: 1600px;
-                margin-left: auto;
-                margin-right: auto;
             }
         }
 
@@ -173,12 +154,13 @@
 
         <!-- Brand / logo -->
         <div id="brand-logo" class="flex items-center space-x-3 ml-2 group cursor-pointer">
-            <svg class="w-6 h-6 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.4)] transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" fill="currentColor"
-                viewBox="0 0 24 24">
+            <svg class="w-6 h-6 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.4)] transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110"
+                fill="currentColor" viewBox="0 0 24 24">
                 <path
                     d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
             </svg>
-            <h1 id="brand-title" class="text-base font-bold tracking-wide uppercase text-slate-100 group-hover:text-blue-300 transition-colors">
+            <h1 id="brand-title"
+                class="text-base font-bold tracking-wide uppercase text-slate-100 group-hover:text-blue-300 transition-colors">
                 Airfare Index System <span class="text-xs font-normal text-slate-400 ml-1">(SIH26056)</span>
             </h1>
         </div>
@@ -213,9 +195,9 @@
                 </li>
             </ul>
         </nav>
-                    
-                </li>
-            </ul>
+
+        </li>
+        </ul>
         </nav>
     </header>
 
@@ -244,9 +226,11 @@
                             <option>Last 7 Days</option>
                             <option>Last 90 Days</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400 group-hover:text-blue-400 transition-colors">
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400 group-hover:text-blue-400 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </div>
                     </div>
@@ -259,9 +243,11 @@
                             <option>South Regional Hubs</option>
                             <option>North Metro Corridor</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400 group-hover:text-blue-400 transition-colors">
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400 group-hover:text-blue-400 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </div>
                     </div>
@@ -274,9 +260,11 @@
                             <option>Business</option>
                             <option>First Class</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400 group-hover:text-blue-400 transition-colors">
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400 group-hover:text-blue-400 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </div>
                     </div>
@@ -292,9 +280,11 @@
                             <option>Vistara</option>
                             <option>Akasa Air</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400 group-hover:text-blue-400 transition-colors">
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400 group-hover:text-blue-400 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </div>
                     </div>
@@ -304,7 +294,8 @@
                 <!-- Refresh button with spin animation capability -->
                 <button id="refresh-data-btn"
                     class="w-full lg:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium text-xs px-6 py-2.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-blue-500/25 active:scale-95 whitespace-nowrap cursor-pointer hover:-translate-y-0.5">
-                    <svg id="refresh-icon" class="w-4 h-4 transition-transform duration-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg id="refresh-icon" class="w-4 h-4 transition-transform duration-700" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
                         </path>
@@ -350,7 +341,8 @@
         <!-- Charts Grid -->
         <section id="charts-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-8 pb-10">
 
-            <div class="chart-card bg-gradient-to-r from-[#162444]/90 to-[#070d19]/90 border border-white/10 rounded-xl p-5 shadow-xl hover:border-slate-600/60 transition-all duration-300">
+            <div
+                class="chart-card bg-gradient-to-r from-[#162444]/90 to-[#070d19]/90 border border-white/10 rounded-xl p-5 shadow-xl hover:border-slate-600/60 transition-all duration-300">
                 <h2 class="text-sm font-semibold text-slate-300 mb-4 flex items-center justify-between">
                     Average Fare by Airline
                     <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
@@ -360,12 +352,14 @@
                 </div>
             </div>
 
-            <div class="chart-card bg-gradient-to-r from-[#162444]/90 to-[#070d19]/90 border border-white/10 rounded-xl p-5 shadow-xl hover:border-slate-600/60 transition-all duration-300">
+            <div
+                class="chart-card bg-gradient-to-r from-[#162444]/90 to-[#070d19]/90 border border-white/10 rounded-xl p-5 shadow-xl hover:border-slate-600/60 transition-all duration-300">
                 <h2 class="text-sm font-semibold text-slate-300 mb-4">Airline Ranking</h2>
                 <div class="chart-canvas-box overflow-y-auto pr-1 custom-scrollbar">
                     <table class="w-full text-xs">
                         <thead>
-                            <tr class="text-left text-slate-400 uppercase tracking-wider text-[10px] border-b border-white/10">
+                            <tr
+                                class="text-left text-slate-400 uppercase tracking-wider text-[10px] border-b border-white/10">
                                 <th class="pb-2 font-semibold">Airline</th>
                                 <th class="pb-2 font-semibold text-right">Avg Fare</th>
                                 <th class="pb-2 font-semibold text-right">30-Day Change</th>
@@ -379,14 +373,16 @@
                 </div>
             </div>
 
-            <div class="chart-card bg-gradient-to-r from-[#162444]/90 to-[#070d19]/90 border border-white/10 rounded-xl p-5 lg:col-span-2 shadow-xl hover:border-slate-600/60 transition-all duration-300">
+            <div
+                class="chart-card bg-gradient-to-r from-[#162444]/90 to-[#070d19]/90 border border-white/10 rounded-xl p-5 lg:col-span-2 shadow-xl hover:border-slate-600/60 transition-all duration-300">
                 <h2 class="text-sm font-semibold text-slate-300 mb-4">Fare by Route, Grouped by Airline</h2>
                 <div class="chart-canvas-box-lg">
                     <canvas id="chart-airline-route-grouped"></canvas>
                 </div>
             </div>
 
-            <div class="chart-card bg-gradient-to-r from-[#162444]/90 to-[#070d19]/90 border border-white/10 rounded-xl p-5 lg:col-span-2 shadow-xl hover:border-slate-600/60 transition-all duration-300">
+            <div
+                class="chart-card bg-gradient-to-r from-[#162444]/90 to-[#070d19]/90 border border-white/10 rounded-xl p-5 lg:col-span-2 shadow-xl hover:border-slate-600/60 transition-all duration-300">
                 <h2 class="text-sm font-semibold text-slate-300 mb-4">30-Day Price Index Trend by Airline</h2>
                 <div class="chart-canvas-box">
                     <canvas id="chart-airline-index-trend"></canvas>
@@ -397,7 +393,8 @@
 
         <!-- Footer -->
         <footer id="pipeline-footer" class="text-center text-[11px] text-slate-500 p-5 border-t border-white/5">
-            Data Sources: Amadeus API, DGCA Monthly Data | Last Pipeline Run: <span class="text-slate-400">10:00 AM IST</span> | API Endpoint: <span class="text-slate-400">/api/v1/airline-comparison</span>
+            Data Sources: Amadeus API, DGCA Monthly Data | Last Pipeline Run: <span class="text-slate-400">10:00 AM
+                IST</span> | API Endpoint: <span class="text-slate-400">/api/v1/airline-comparison</span>
         </footer>
     </main>
 

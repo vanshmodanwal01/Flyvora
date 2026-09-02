@@ -10,22 +10,6 @@
 
     <style>
       /* ---------- Responsive Breakpoints & Tweaks ---------- */
-      @media (max-width: 1024px) {
-        #site-header {
-          padding-left: 1.25rem;
-          padding-right: 1.25rem;
-        }
-
-        #primary-nav ul {
-          gap: 0.25rem;
-        }
-
-        #primary-nav a {
-          padding-left: 0.75rem;
-          padding-right: 0.75rem;
-        }
-      }
-
       @media (max-width: 640px) {
         #site-header {
           flex-direction: column;
@@ -37,11 +21,22 @@
 
         #primary-nav {
           width: 100%;
-          overflow-x: auto;
+          /* Allow child elements to wrap instead of scrolling horizontally */
+          overflow-x: visible;
         }
 
         #primary-nav ul {
-          width: max-content;
+          /* Set width to full container and wrap items */
+          width: 100%;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 0.375rem;
+        }
+
+        /* Adjust padding and text size so menu links fit neatly on small screens */
+        #primary-nav a {
+          padding: 0.375rem 0.625rem;
+          font-size: 0.75rem;
         }
 
         #brand-title {
@@ -59,21 +54,6 @@
 
         .metric-value {
           font-size: 1.5rem;
-        }
-      }
-
-      @media (max-width: 400px) {
-        #brand-title span {
-          display: block;
-          margin-left: 0;
-        }
-      }
-
-      @media (min-width: 1536px) {
-        #dashboard-main {
-          max-width: 1600px;
-          margin-left: auto;
-          margin-right: auto;
         }
       }
 

@@ -15,23 +15,6 @@
     -->
     <style>
         /* ---------- Tablets & small laptops ---------- */
-        @media (max-width: 1024px) {
-            #site-header {
-                padding-left: 1.25rem;
-                padding-right: 1.25rem;
-            }
-
-            #primary-nav ul {
-                gap: 0.25rem;
-            }
-
-            #primary-nav a {
-                padding-left: 0.75rem;
-                padding-right: 0.75rem;
-            }
-        }
-
-        /* ---------- Mobile phones ---------- */
         @media (max-width: 640px) {
             #site-header {
                 flex-direction: column;
@@ -43,11 +26,22 @@
 
             #primary-nav {
                 width: 100%;
-                overflow-x: auto;
+                /* Allow child elements to wrap instead of scrolling horizontally */
+                overflow-x: visible;
             }
 
             #primary-nav ul {
-                width: max-content;
+                /* Set width to full container and wrap items */
+                width: 100%;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.375rem;
+            }
+
+            /* Adjust padding and text size so menu links fit neatly on small screens */
+            #primary-nav a {
+                padding: 0.375rem 0.625rem;
+                font-size: 0.75rem;
             }
 
             #brand-title {
@@ -59,34 +53,12 @@
                 padding-right: 1rem;
             }
 
-            #key-metrics-grid {
+            #route-summary-kpi-grid {
                 gap: 0.75rem;
-                padding: 0.5rem;
             }
 
             .metric-value {
                 font-size: 1.5rem;
-            }
-        }
-
-        /* ---------- Small phones ---------- */
-        @media (max-width: 400px) {
-            #brand-title span {
-                display: block;
-                margin-left: 0;
-            }
-
-            .chart-card h2 {
-                font-size: 0.8rem;
-            }
-        }
-
-        /* ---------- Large desktop / wide monitors ---------- */
-        @media (min-width: 1536px) {
-            #dashboard-main {
-                max-width: 1600px;
-                margin-left: auto;
-                margin-right: auto;
             }
         }
 
@@ -239,172 +211,177 @@
     <!-- ============ Dashboard Main (Data Quality page) ============ -->
     <main id="dashboard-main" class="w-full px-6 py-4">
 
-               
-    </header>
 
-    <!-- ============ Dashboard Main (Data Quality page) ============ -->
-    <main id="dashboard-main" class="w-full px-6 py-4">
+        </header>
 
-        <!-- ---------- Page heading ---------- -->
-        <div class="pt-2 pb-1">
-            <h2 class="text-lg font-bold text-slate-100">Data Quality &amp; Pipeline Transparency</h2>
-            <p class="text-xs text-slate-400 mt-1">Ingestion health, validation results, and freshness of every
-                source feeding the index.</p>
-        </div>
+        <!-- ============ Dashboard Main (Data Quality page) ============ -->
+        <main id="dashboard-main" class="w-full px-6 py-4">
 
-        <!-- ---------- Filter Bar (scoped to just the date range for this page) ---------- -->
-        <section id="filter-bar"
-            class="w-full bg-gradient-to-r from-[#1e293b]/55 to-[#1e293b]/25 border border-slate-700/50 backdrop-blur-md rounded-xl p-4 my-3 shadow-lg">
-            <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+            <!-- ---------- Page heading ---------- -->
+            <div class="pt-2 pb-1">
+                <h2 class="text-lg font-bold text-slate-100">Data Quality &amp; Pipeline Transparency</h2>
+                <p class="text-xs text-slate-400 mt-1">Ingestion health, validation results, and freshness of every
+                    source feeding the index.</p>
+            </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full text-xs font-medium">
+            <!-- ---------- Filter Bar (scoped to just the date range for this page) ---------- -->
+            <section id="filter-bar"
+                class="w-full bg-gradient-to-r from-[#1e293b]/55 to-[#1e293b]/25 border border-slate-700/50 backdrop-blur-md rounded-xl p-4 my-3 shadow-lg">
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
 
-                    <!-- Filter: date range -->
-                    <div class="relative w-full">
-                        <select name="days" id="filter-date-range"
-                            class="w-full bg-[#1e293b]/80  border border-slate-700/70 text-slate-200 rounded-lg px-3.5 py-2.5 pr-8 appearance-none focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-sm cursor-pointer">
-                            <option>Last 30 Days</option>
-                            <option>Last 7 Days</option>
-                            <option>Last 90 Days</option>
-                        </select>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7"></path>
-                            </svg>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full text-xs font-medium">
+
+                        <!-- Filter: date range -->
+                        <div class="relative w-full">
+                            <select name="days" id="filter-date-range"
+                                class="w-full bg-[#1e293b]/80  border border-slate-700/70 text-slate-200 rounded-lg px-3.5 py-2.5 pr-8 appearance-none focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-sm cursor-pointer">
+                                <option>Last 30 Days</option>
+                                <option>Last 7 Days</option>
+                                <option>Last 90 Days</option>
+                            </select>
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
                         </div>
+
+                        <!-- Filter: data source -->
+                        <div class="relative w-full">
+                            <select name="source" id="filter-data-source"
+                                class="w-full bg-[#1e293b]/80  border border-slate-700/70 text-slate-200 rounded-lg px-3.5 py-2.5 pr-8 appearance-none focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-sm cursor-pointer">
+                                <option>All Sources</option>
+                                <option>Amadeus API</option>
+                                <option>DGCA Monthly Data</option>
+                            </select>
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <!-- Filter: data source -->
-                    <div class="relative w-full">
-                        <select name="source" id="filter-data-source"
-                            class="w-full bg-[#1e293b]/80  border border-slate-700/70 text-slate-200 rounded-lg px-3.5 py-2.5 pr-8 appearance-none focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-sm cursor-pointer">
-                            <option>All Sources</option>
-                            <option>Amadeus API</option>
-                            <option>DGCA Monthly Data</option>
-                        </select>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </div>
+                    <!-- Refresh data button -->
+                    <button id="refresh-data-btn"
+                        class="w-full lg:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium text-xs px-6 py-2.5 rounded-lg transition duration-200 shadow-md hover:shadow-blue-500/20 active:scale-95 whitespace-nowrap cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                            </path>
+                        </svg>
+                        Refresh
+                    </button>
+
+                </div>
+            </section>
+
+            <!-- ---------- Key Metrics ---------- -->
+            <section id="key-metrics-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 p-4 rounded-2xl">
+
+                <!-- KPI: Pipeline Uptime -->
+                <div id="metric-pipeline-uptime"
+                    class="bg-gradient-to-r from-slate-800 via-slate-900 to-[#0e1e3e] border border-white/10 rounded-xl p-4 text-center backdrop-blur-sm my-2 shadow-lg">
+                    <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Pipeline Uptime (30d)</p>
+                    <p class="metric-value text-3xl font-bold text-emerald-300 mt-2">98.4%</p>
+                    <p class="text-[11px] text-slate-500 mt-1">2 missed runs of 128 scheduled</p>
+                </div>
+
+                <!-- KPI: Records Ingested -->
+                <div id="metric-records-ingested"
+                    class="bg-gradient-to-r from-slate-800 via-slate-900 to-[#0e1e3e] border border-white/10 rounded-xl p-4 text-center backdrop-blur-sm my-2 shadow-lg">
+                    <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Records Ingested (Last Run)
+                    </p>
+                    <p class="metric-value text-3xl font-bold text-blue-300 mt-2">18,942</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Across 42 tracked routes</p>
+                </div>
+
+                <!-- KPI: Validation Failures -->
+                <div id="metric-validation-failures"
+                    class="bg-gradient-to-r from-slate-800 via-slate-900 to-[#0e1e3e] border border-white/10 rounded-xl p-4 text-center backdrop-blur-sm my-2 shadow-lg">
+                    <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Validation Failures (24h)
+                    </p>
+                    <p class="metric-value text-3xl font-bold text-amber-400 mt-2">12 Rows</p>
+                    <p class="text-[11px] text-slate-500 mt-1">0.06% of ingested records</p>
+                </div>
+
+                <!-- KPI: Last Successful Run -->
+                <div id="metric-last-run"
+                    class="bg-gradient-to-r from-slate-800 via-slate-900 to-[#0e1e3e] border border-white/10 rounded-xl p-4 text-center backdrop-blur-sm my-2 shadow-lg">
+                    <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Last Successful Run</p>
+                    <p class="metric-value text-3xl font-bold text-slate-100 mt-2">10:00 AM</p>
+                    <p class="text-[11px] text-slate-500 mt-1">IST · Next run in 5h 42m</p>
+                </div>
+            </section>
+
+            <!-- ---------- Charts & Analysis Grid ---------- -->
+            <section id="charts-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-10 pb-10">
+
+                <!-- Chart: Ingestion volume over time -->
+                <div
+                    class="chart-card bg-gradient-to-r from-[#162444] to-[#070d19] border border-white/10 rounded-xl p-5">
+                    <h2 class="text-sm font-semibold text-slate-300 mb-4">Daily Ingestion Volume (Last 30 Days)</h2>
+                    <div class="chart-canvas-box">
+                        <canvas id="chart-ingestion-volume"></canvas>
                     </div>
-
                 </div>
 
-                <!-- Refresh data button -->
-                <button id="refresh-data-btn"
-                    class="w-full lg:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium text-xs px-6 py-2.5 rounded-lg transition duration-200 shadow-md hover:shadow-blue-500/20 active:scale-95 whitespace-nowrap cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                        </path>
-                    </svg>
-                    Refresh
-                </button>
-
-            </div>
-        </section>
-
-        <!-- ---------- Key Metrics ---------- -->
-        <section id="key-metrics-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 p-4 rounded-2xl">
-
-            <!-- KPI: Pipeline Uptime -->
-            <div id="metric-pipeline-uptime"
-                class="bg-gradient-to-r from-slate-800 via-slate-900 to-[#0e1e3e] border border-white/10 rounded-xl p-4 text-center backdrop-blur-sm my-2 shadow-lg">
-                <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Pipeline Uptime (30d)</p>
-                <p class="metric-value text-3xl font-bold text-emerald-300 mt-2">98.4%</p>
-                <p class="text-[11px] text-slate-500 mt-1">2 missed runs of 128 scheduled</p>
-            </div>
-
-            <!-- KPI: Records Ingested -->
-            <div id="metric-records-ingested"
-                class="bg-gradient-to-r from-slate-800 via-slate-900 to-[#0e1e3e] border border-white/10 rounded-xl p-4 text-center backdrop-blur-sm my-2 shadow-lg">
-                <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Records Ingested (Last Run)
-                </p>
-                <p class="metric-value text-3xl font-bold text-blue-300 mt-2">18,942</p>
-                <p class="text-[11px] text-slate-500 mt-1">Across 42 tracked routes</p>
-            </div>
-
-            <!-- KPI: Validation Failures -->
-            <div id="metric-validation-failures"
-                class="bg-gradient-to-r from-slate-800 via-slate-900 to-[#0e1e3e] border border-white/10 rounded-xl p-4 text-center backdrop-blur-sm my-2 shadow-lg">
-                <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Validation Failures (24h)</p>
-                <p class="metric-value text-3xl font-bold text-amber-400 mt-2">12 Rows</p>
-                <p class="text-[11px] text-slate-500 mt-1">0.06% of ingested records</p>
-            </div>
-
-            <!-- KPI: Last Successful Run -->
-            <div id="metric-last-run"
-                class="bg-gradient-to-r from-slate-800 via-slate-900 to-[#0e1e3e] border border-white/10 rounded-xl p-4 text-center backdrop-blur-sm my-2 shadow-lg">
-                <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Last Successful Run</p>
-                <p class="metric-value text-3xl font-bold text-slate-100 mt-2">10:00 AM</p>
-                <p class="text-[11px] text-slate-500 mt-1">IST · Next run in 5h 42m</p>
-            </div>
-        </section>
-
-        <!-- ---------- Charts & Analysis Grid ---------- -->
-        <section id="charts-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-10 pb-10">
-
-            <!-- Chart: Ingestion volume over time -->
-            <div class="chart-card bg-gradient-to-r from-[#162444] to-[#070d19] border border-white/10 rounded-xl p-5">
-                <h2 class="text-sm font-semibold text-slate-300 mb-4">Daily Ingestion Volume (Last 30 Days)</h2>
-                <div class="chart-canvas-box">
-                    <canvas id="chart-ingestion-volume"></canvas>
+                <!-- Chart: Validation pass/fail rate -->
+                <div
+                    class="chart-card bg-gradient-to-r from-[#162444] to-[#070d19] border border-white/10 rounded-xl p-5">
+                    <h2 class="text-sm font-semibold text-slate-300 mb-4">Validation Pass Rate (Last 30 Days)</h2>
+                    <div class="chart-canvas-box">
+                        <canvas id="chart-validation-rate"></canvas>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Chart: Validation pass/fail rate -->
-            <div class="chart-card bg-gradient-to-r from-[#162444] to-[#070d19] border border-white/10 rounded-xl p-5">
-                <h2 class="text-sm font-semibold text-slate-300 mb-4">Validation Pass Rate (Last 30 Days)</h2>
-                <div class="chart-canvas-box">
-                    <canvas id="chart-validation-rate"></canvas>
-                </div>
-            </div>
-
-            <!-- Data source status list -->
-            <div class="chart-card bg-gradient-to-r from-[#162444] to-[#070d19] border border-white/10 rounded-xl p-5">
-                <h2 class="text-sm font-semibold text-slate-300 mb-4">Data Source Status</h2>
-                <div class="chart-canvas-box overflow-y-auto">
-                    <ul id="data-source-status-list" class="space-y-2 text-xs">
-                        <!-- rows injected by data-quality.js -->
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Pipeline run log -->
-            <div class="chart-card bg-gradient-to-r from-[#162444] to-[#070d19] border border-white/10 rounded-xl p-5">
-                <h2 class="text-sm font-semibold text-slate-300 mb-4">Recent Pipeline Runs</h2>
-                <div class="chart-canvas-box overflow-y-auto">
-                    <table class="w-full text-xs">
-                        <thead>
-                            <tr class="text-left text-slate-400 uppercase tracking-wider text-[10px]">
-                                <th class="pb-2 font-semibold">Run Time</th>
-                                <th class="pb-2 font-semibold">Status</th>
-                                <th class="pb-2 font-semibold text-right">Records</th>
-                                <th class="pb-2 font-semibold text-right">Duration</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pipeline-run-log-body" class="divide-y divide-white/5">
+                <!-- Data source status list -->
+                <div
+                    class="chart-card bg-gradient-to-r from-[#162444] to-[#070d19] border border-white/10 rounded-xl p-5">
+                    <h2 class="text-sm font-semibold text-slate-300 mb-4">Data Source Status</h2>
+                    <div class="chart-canvas-box overflow-y-auto">
+                        <ul id="data-source-status-list" class="space-y-2 text-xs">
                             <!-- rows injected by data-quality.js -->
-                        </tbody>
-                    </table>
+                        </ul>
+                    </div>
                 </div>
-            </div>
 
-        </section>
+                <!-- Pipeline run log -->
+                <div
+                    class="chart-card bg-gradient-to-r from-[#162444] to-[#070d19] border border-white/10 rounded-xl p-5">
+                    <h2 class="text-sm font-semibold text-slate-300 mb-4">Recent Pipeline Runs</h2>
+                    <div class="chart-canvas-box overflow-y-auto">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="text-left text-slate-400 uppercase tracking-wider text-[10px]">
+                                    <th class="pb-2 font-semibold">Run Time</th>
+                                    <th class="pb-2 font-semibold">Status</th>
+                                    <th class="pb-2 font-semibold text-right">Records</th>
+                                    <th class="pb-2 font-semibold text-right">Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pipeline-run-log-body" class="divide-y divide-white/5">
+                                <!-- rows injected by data-quality.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-        <!-- ---------- Footer / Pipeline Metadata ---------- -->
-        <footer id="pipeline-footer" class="text-center text-[11px] text-slate-500 p-5 border-t border-white/5 ">
-            Data Sources: Amadeus API, DGCA Monthly Data | Last Pipeline Run: <span class="text-slate-400">10:00 AM
-                IST</span> | API Endpoint: <span class="text-slate-400">/api/v1/data-quality</span>
-        </footer>
-    </main>
+            </section>
 
-    <script src="data-quality.js"></script>
+            <!-- ---------- Footer / Pipeline Metadata ---------- -->
+            <footer id="pipeline-footer" class="text-center text-[11px] text-slate-500 p-5 border-t border-white/5 ">
+                Data Sources: Amadeus API, DGCA Monthly Data | Last Pipeline Run: <span class="text-slate-400">10:00 AM
+                    IST</span> | API Endpoint: <span class="text-slate-400">/api/v1/data-quality</span>
+            </footer>
+        </main>
+
+        <script src="data-quality.js"></script>
 </body>
 
 </html>
