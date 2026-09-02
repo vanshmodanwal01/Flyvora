@@ -47,7 +47,7 @@ const DEMO_INDEX_TREND = {
     south: [100, 101, 103, 105, 108, 110, 113, 116],
 };
 
-new Chart(document.getElementById("chart-index-trend"), {
+const indexTrendChart = new Chart(document.getElementById("chart-index-trend"), {
     type: "line",
     data: {
         labels: DEMO_INDEX_TREND.labels,
@@ -137,7 +137,7 @@ const DEMO_LEAD_TIME = {
     prices: [3000, 3200, 3800, 5000, 7500],
 };
 
-new Chart(document.getElementById("chart-lead-time"), {
+const leadTimeChart = new Chart(document.getElementById("chart-lead-time"), {
     type: "line",
     data: {
         labels: DEMO_LEAD_TIME.labels,
@@ -176,7 +176,7 @@ const DEMO_AIRLINES = {
     avgFare: [4200, 4450, 4100, 3950],
 };
 
-new Chart(document.getElementById("chart-airline-comparison"), {
+const airlineComparisonChart = new Chart(document.getElementById("chart-airline-comparison"), {
     type: "bar",
     data: {
         labels: DEMO_AIRLINES.labels,
@@ -271,3 +271,47 @@ refreshBtn.addEventListener("click", () => {
         refreshBtn.classList.remove("opacity-80", "pointer-events-none");
     }, 700);
 });
+
+function renderRouteRanking(rows) {
+    heatmapBody.innerHTML = "";
+    rows.slice().sort((a, b) => b.change - a.change).forEach(({ route, weight, change }) => {
+        const tr = document.createElement("tr");
+        tr.className = `${rowTint(change)} transition-colors duration-200 cursor-pointer`;
+        tr.innerHTML = `<td class="py-2.5 px-1 font-medium text-slate-200">${route}</td><td class="py-2.5 px-1 text-right text-slate-400">${weight}</td><td class="py-2.5 px-1 text-right font-semibold ${changeColor(change)}">${change >= 0 ? "+" : ""}${change}%</td>`;
+        heatmapBody.appendChild(tr);
+    });
+}
+
+function setMetric(id, value) {
+    const element = document.querySelector(`#${id} .metric-value`);
+    if (element) element.textContent = value;
+}
+
+async function loadOverview() {
+    const days = document.getElementById("filter-date-range")?.value.match(/\d+/)?.[0] || 30;
+    const [summary, indexTrend, routes, leadTime, airlines, anomalies] = await Promise.all([
+        FlyvoraApi.get("/dashboard/overview/summary"), FlyvoraApi.get("/analytics/index-trend"),
+        FlyvoraApi.get("/routes/ranking", { days }), FlyvoraApi.get("/analytics/lead-time"),
+        FlyvoraApi.get("/airlines/comparison", { days }), FlyvoraApi.get("/analytics/anomalies"),
+    ]);
+    setMetric("metric-airfare-index", summary.airfareIndex.toFixed(1));
+    setMetric("metric-inflation-rate", `${summary.inflationRate >= 0 ? "+" : ""}${summary.inflationRate.toFixed(1)}%`);
+    setMetric("metric-anomalies-detected", summary.anomaliesDetected);
+    setMetric("metric-tracked-routes", summary.trackedRoutes);
+    indexTrendChart.data.labels = indexTrend.labels; indexTrendChart.data.datasets[0].data = indexTrend.national; indexTrendChart.data.datasets[1].data = indexTrend.south; indexTrendChart.update();
+    leadTimeChart.data.labels = leadTime.labels; leadTimeChart.data.datasets[0].data = leadTime.prices; leadTimeChart.update();
+    airlineComparisonChart.data.labels = airlines.map((item) => item.name); airlineComparisonChart.data.datasets[0].data = airlines.map((item) => item.avgFare); airlineComparisonChart.update();
+    renderRouteRanking(routes);
+    alertsList.innerHTML = "";
+    anomalies.forEach(({ route, detail, severity }) => {
+        const li = document.createElement("li"); li.className = "flex items-start justify-between gap-3 bg-white/[0.03] border border-white/5 rounded-lg px-3 py-2.5";
+        li.innerHTML = `<div><p class="font-medium text-slate-200">${route}</p><p class="text-slate-400 text-[11px] mt-0.5">${detail}</p></div><span class="shrink-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${severityStyle[severity] || severityStyle.Low}">${severity}</span>`;
+        alertsList.appendChild(li);
+    });
+}
+
+refreshBtn.addEventListener("click", async () => {
+    try { await loadOverview(); } catch (error) { console.error("Unable to load overview data", error); }
+});
+document.getElementById("filter-date-range")?.addEventListener("change", () => loadOverview().catch((error) => console.error("Unable to load overview data", error)));
+loadOverview().catch((error) => console.error("Unable to load overview data", error));

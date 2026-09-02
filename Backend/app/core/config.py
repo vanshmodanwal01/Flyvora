@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # --- CORS ---
     # Comma-separated in the env var, parsed into a list here.
-    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
+    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5500,http://127.0.0.1:5500"
 
     # --- Misc ---
     ENVIRONMENT: str = "development"
