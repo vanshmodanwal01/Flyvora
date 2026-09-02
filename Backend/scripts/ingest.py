@@ -21,6 +21,11 @@ from app.services.ingestion import run_ingestion  # noqa: E402
 def main():
     parser = argparse.ArgumentParser(description="Ingest a CSV of historical flight fares into Flyvora.")
     parser.add_argument("csv_path", help="Path to the CSV file to ingest")
+    parser.add_argument(
+        "--source-label", default="csv",
+        help="Tag stored on every row's `source` column, e.g. 'csv-historical-real' for a known-real dataset "
+             "vs 'csv' for the Phase 1 synthetic sample.",
+    )
     args = parser.parse_args()
 
     csv_path = Path(args.csv_path)
@@ -30,7 +35,7 @@ def main():
 
     db = SessionLocal()
     try:
-        result = run_ingestion(db, str(csv_path))
+        result = run_ingestion(db, str(csv_path), source_label=args.source_label)
     except ValueError as exc:
         print(f"Ingestion failed: {exc}", file=sys.stderr)
         sys.exit(1)

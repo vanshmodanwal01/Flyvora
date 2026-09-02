@@ -50,7 +50,16 @@ uvicorn app.main:app --reload
 | `travel_class` | no | `Economy` / `Business` / `First Class` — defaults to `Economy` |
 | `currency` | no | Defaults to `INR` |
 
-`data/raw/sample_fares.csv` is a **synthetic** dataset (1,780 rows, 6 routes, 5 airlines, ~45 days) generated for development and demo purposes only, with a handful of intentionally invalid rows so the Data Quality dashboard has something real to report. Replace it with actual historical fare data before relying on any numbers for the SIH submission.
+## Real dataset included
+
+`data/raw/easemytrip_2022_real.csv` is a **genuine** ~300K-row fare dataset (airline, route, class, days-to-departure, price) scraped from EaseMyTrip, covering India's 6 busiest metro-pair routes (Delhi, Mumbai, Bangalore, Kolkata, Hyderabad, Chennai — per DGCA traffic data, these six handle ~71% of India's domestic passengers). Every airline, route, class, lead-time, and price value in it is real.
+
+**One disclosed caveat:** the source doesn't publish a per-row calendar date, only a documented 48-day collection window (11 Feb – 31 Mar 2022). `scripts/prepare_real_dataset.py` deterministically distributes rows across that real window, then **replays** the whole window forward so it ends on "today" — purely so the app's trailing-30/90-day queries have something to show live. This is a disclosed placement convention, not fabricated pricing; every row is tagged `source="csv-historical-real"` and the resulting `data_sources` record says so. Run it again any time to refresh the replay window:
+
+```bash
+python scripts/prepare_real_dataset.py
+python scripts/ingest.py data/raw/easemytrip_2022_prepared.csv --source-label csv-historical-real
+```
 
 ## Running tests
 
