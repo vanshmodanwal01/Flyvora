@@ -5,23 +5,23 @@ const airline = document.getElementById("airline");
 const quality = document.getElementById("quality");
 
 home.addEventListener("click", () => {
-  window.location.href = "/Overview/index.html";
+    window.location.href = "../Overview/index.html";
 });
 
 route.addEventListener("click", () => {
-  window.location.href = "/Route_Heatmap+Trends/routeheatmap.html";
+    window.location.href = "../Route_Heatmap+Trends/routeheatmap.html";
 });
 
 lead.addEventListener("click", () => {
-  window.location.href = "/Lead-Time/lead-time.html";
+    window.location.href = "lead-time.html";
 });
 
 airline.addEventListener("click", () => {
-  window.location.href = "/Airline/airline-comparison.html";
+    window.location.href = "../Airline/airline-comparison.html";
 });
 
 quality.addEventListener("click", () => {
-  window.location.href = "/Data-quality/data-quality.html";
+    window.location.href = "../Data-quality/data-quality.html";
 });
 
 /**
