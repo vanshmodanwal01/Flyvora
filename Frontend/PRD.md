@@ -32,7 +32,7 @@ The frontend must enable a user to:
 
 - India domestic airfare analytics for the configured routes and carriers.
 - Five linked dashboard pages, responsive for desktop and smaller screens.
-- Filtering, chart exploration, route comparison, and refresh actions.
+- Live backend integration for dashboard data, chart exploration, route comparison, and refresh actions.
 - Clear display of index, fares, dates, weights, counts, source status, and anomalies.
 
 ### Excluded
@@ -59,8 +59,8 @@ Persistent navigation links the five views below. The active page must be visibl
 ### Shared requirements
 
 1. The header shall identify the product as **Airfare Index System (SIH26056)** and provide navigation to every page.
-2. Filters shall update all visuals and KPIs within their page using the same query context.
-3. Refresh shall fetch the latest available data, show a pending state, and then show either updated values or an understandable error message.
+2. Implemented date and route filters shall update all visuals and KPIs that the backend supports within their page using the same query context. Remaining filters require backend query support before they can be enabled.
+3. Refresh shall fetch the latest available data and show a pending state. API failures are logged to the browser console; visible inline error states remain required work.
 4. Charts shall provide legends, labelled axes, tooltips, accessible text alternatives, and a no-data state.
 5. Currency shall use INR (`₹`) and percentage changes shall indicate direction with colour and text, rather than colour alone.
 6. Dates, data timestamp, methodology/version, and applicable filter context shall be displayed wherever values can be interpreted incorrectly without them.
@@ -101,11 +101,23 @@ Persistent navigation links the five views below. The active page must be visibl
 
 ## Data and integration requirements
 
-The UI currently uses local demonstration data. Production integration shall replace it with API responses based on the selected filters.
+The UI consumes the Flyvora FastAPI backend through the shared `Frontend/api.js` client. By default it uses `http://localhost:8000/api`; deployments may override this before the page scripts load by setting `window.FLYVORA_API_BASE`.
+
+| Page | Backend endpoints |
+|---|---|
+| Overview | `/dashboard/overview/summary`, `/analytics/index-trend`, `/routes/ranking`, `/analytics/lead-time`, `/airlines/comparison`, `/analytics/anomalies` |
+| Route Explorer | `/routes`, `/routes/{route_code}/summary`, `/routes/ranking` |
+| Lead-Time Analysis | `/routes`, `/analytics/lead-time`, `/analytics/lead-time/checkpoints`, `/analytics/lead-time/compare` |
+| Airline Comparison | `/airlines/comparison`, `/airlines/route-matrix`, `/airlines/index-trend` |
+| Data Quality | `/data-quality/summary`, `/data-quality/ingestion-volume`, `/data-quality/validation-rate`, `/data-quality/sources`, `/data-quality/runs` |
+
+The Overview, Route Explorer, and Data Quality date-range controls pass a `days` query parameter to endpoints that support it. Route Explorer also passes the selected route code. Other visible filters remain UI-only until the backend exposes matching query parameters.
+
+For local development, run the API at port `8000` and serve the frontend from an origin allowed by `Backend/.env` (`3000`, `5173`, or `5500` by default). The backend requires PostgreSQL and Python 3.12 or 3.13 for the pinned dependencies.
 
 Minimum observation fields: `origin`, `destination`, `airline`, `travel_date`, `search_date`, `advance_days`, `fare_class`, `base_fare`, `tax`, `fees`, `total_fare`, `availability`, and `timestamp`.
 
-The backend shall additionally expose aggregated data for index trends, route weights/rankings, lead-time series, airline summaries, anomaly alerts, source status, and pipeline runs. Every response should include `generated_at`, the applied filters, and an index/methodology version.
+The backend exposes aggregated data for index trends, route weights/rankings, lead-time series, airline summaries, anomaly alerts, source status, and pipeline runs. Future response versions should include `generated_at`, applied filters, and an index/methodology version.
 
 ## UX and visual requirements
 
@@ -136,11 +148,13 @@ The frontend is accepted when:
 
 1. All five pages navigate correctly and maintain an active-navigation state.
 2. Each selector affects the relevant KPIs, tables, and charts using live API data.
-3. Loading, empty, and API-error states are implemented for every data region.
+3. Loading, empty, and visible API-error states are implemented for every data region.
 4. Route ranks, airline ranks, trends, and quality figures reconcile with the backend response for an identical filter set.
 5. The responsive layout and keyboard navigation work on desktop and mobile viewport tests.
 6. Demo values are clearly removed or labelled as demo data before production release.
 
 ## Current implementation notes
 
-The `Frontend` folder contains standalone HTML pages with page-specific JavaScript and Tailwind-generated CSS. Charts are rendered with Chart.js. Interactive behaviour currently includes filters, refresh-button feedback, tab switching, and route heatmap sorting; most displayed metrics and series remain seeded demo data. This document treats those screens as the approved MVP visual baseline while specifying the production behaviour still required.
+The `Frontend` folder contains standalone HTML pages with page-specific JavaScript, a shared `api.js` client, and Tailwind-generated CSS. Charts are rendered with Chart.js. The five dashboards now render their KPIs, tables, and charts from FastAPI responses; the existing demo datasets remain only as initial chart placeholders while live requests are in flight. Interactive behaviour includes API-backed refresh, route selection, supported date-range filtering, tab switching, and route heatmap sorting.
+
+Current follow-up work: add backend support for all visible filters, visible loading/empty/error states, response metadata, and end-to-end browser tests against a seeded PostgreSQL database.
