@@ -102,7 +102,7 @@ def get_route_summary(db: Session, route: Route, days: int = 30) -> dict | None:
     for obs in observations:
         daily_avg.setdefault(obs.observation_date, []).append(float(obs.price))
 
-    labels = [d.strftime("%-d %b") for d in sorted(daily_avg.keys())]
+    labels = [f"{d.day} {d.strftime('%b')}" for d in sorted(daily_avg.keys())]
     route_prices = [round(sum(v) / len(v), 2) for _, v in sorted(daily_avg.items())]
 
     # National average across the same dates, for the comparison line.
