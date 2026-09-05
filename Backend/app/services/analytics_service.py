@@ -7,6 +7,7 @@ from app.schemas.analytics import (
     IndexTrendResponse,
     LeadTimeCompareResponse,
     LeadTimeCurve,
+    StructuredAnomaly,
 )
 
 DEFAULT_CHECKPOINTS = [45, 30, 21, 14, 7, 3, 1]
@@ -48,3 +49,8 @@ def get_checkpoint_breakdown(db: Session, route_code: str | None) -> list[Checkp
 def get_anomalies(db: Session) -> list[AnomalyAlert]:
     alerts = analytics_repo.detect_anomalies(db)
     return [AnomalyAlert(**a) for a in alerts]
+
+
+def get_anomalies_structured(db: Session) -> list[StructuredAnomaly]:
+    results = analytics_repo.detect_anomalies_structured(db)
+    return [StructuredAnomaly(**r) for r in results]

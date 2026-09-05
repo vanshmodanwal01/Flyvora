@@ -3,11 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.core.config import settings
+from app.core.scheduler import start_scheduler, stop_scheduler
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Airfare Price Index (APIx) backend — Phase 1: CSV ingestion + analytics APIs.",
-    version="0.1.0",
+    description="Airfare Price Index (APIx) backend for SIH26056 — CSV historical data + live SerpApi collection + analytics.",
+    version="0.2.0",
 )
 
 app.add_middleware(
@@ -19,6 +20,16 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.API_PREFIX)
+
+
+@app.on_event("startup")
+def _on_startup():
+    start_scheduler()
+
+
+@app.on_event("shutdown")
+def _on_shutdown():
+    stop_scheduler()
 
 
 @app.get("/")

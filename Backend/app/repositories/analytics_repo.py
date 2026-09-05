@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -88,6 +88,68 @@ def get_checkpoint_breakdown(db: Session, route_id: int | None, checkpoints: lis
         pct_change = ((price - base_price) / base_price * 100) if base_price else 0.0
         rows.append({"checkpoint": label, "price": price, "pctChange": round(pct_change, 1)})
     return rows
+
+
+def detect_anomalies_structured(db: Session, z_threshold: float = 2.0) -> list[dict]:
+    """
+    Structured anomaly output per the SIH prototype spec: entity, observed
+    price, expected baseline, deviation, method, severity, timestamp,
+    source - and explicit `insufficient_data` status rather than silently
+    skipping (or worse, inventing an anomaly for) a route with too little
+    history. Runs alongside detect_anomalies() above rather than replacing
+    it, since existing callers depend on that function's return shape.
+    """
+    routes = db.execute(select(Route)).scalars().all()
+    results: list[dict] = []
+    cutoff = date.today() - timedelta(days=30)
+    now = datetime.now(timezone.utc)
+
+    for route in routes:
+        prices = [
+            float(p) for (p,) in db.execute(
+                select(FareObservation.price).where(
+                    FareObservation.route_id == route.id, FareObservation.observation_date >= cutoff
+                ).order_by(FareObservation.observation_date, FareObservation.collected_at)
+            ).all()
+        ]
+        if len(prices) < 5:
+            results.append({
+                "route": route.display_code,
+                "current_price": prices[-1] if prices else None,
+                "expected_price": None,
+                "z_score": None,
+                "severity": None,
+                "is_anomaly": False,
+                "status": "insufficient_historical_data",
+                "sample_size": len(prices),
+                "detection_method": "z_score",
+                "detected_at": now.isoformat(),
+            })
+            continue
+
+        mean = sum(prices) / len(prices)
+        variance = sum((p - mean) ** 2 for p in prices) / len(prices)
+        stddev = variance ** 0.5
+        latest = prices[-1]
+        z = (latest - mean) / stddev if stddev > 0 else 0.0
+        is_anomaly = abs(z) >= z_threshold
+        severity = None
+        if is_anomaly:
+            severity = "HIGH" if abs(z) >= 3 else "MEDIUM"
+
+        results.append({
+            "route": route.display_code,
+            "current_price": round(latest, 2),
+            "expected_price": round(mean, 2),
+            "z_score": round(z, 2),
+            "severity": severity,
+            "is_anomaly": is_anomaly,
+            "status": "evaluated",
+            "sample_size": len(prices),
+            "detection_method": "z_score",
+            "detected_at": now.isoformat(),
+        })
+    return results
 
 
 def detect_anomalies(db: Session, z_threshold: float = 2.0) -> list[dict]:

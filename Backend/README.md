@@ -1,82 +1,92 @@
-# Flyvora Backend — Phase 1
+# Flyvora Backend — SIH26056
 
-FastAPI + PostgreSQL backend for the Flyvora (APIx) airfare price index dashboards. This is **Phase 1**: CSV ingestion, a normalized relational schema, and read APIs that mirror the existing frontend's mock data shapes. No external flight APIs, ML, or forecasting yet — see the main repo README for the full phase roadmap.
+FastAPI + PostgreSQL backend for Flyvora, an airfare price monitoring prototype for **SIH26056** (MoSPI/DIID — "Development of a Real-time Airfare Price Index for India through Automated Web Scraping of Airline and Online Travel Aggregator Portals for Augmentation of the Consumer Price Index (CPI)").
 
-## Quick start (Docker — recommended)
+This is a **prototype**, not a production/national-scale system. It intentionally covers a small, real, evidence-based set of high-priority routes rather than claiming full national coverage.
+
+## What's real vs. what's a labeled prototype convention
+
+- **Real**: the ~300K-row historical fare dataset (`data/raw/easemytrip_2022_real.csv`, genuine EaseMyTrip fares), the SerpApi provider integration (built against SerpApi's current documented API), all analytics, the Airfare Price Index computation, anomaly detection, and forecasting — all computed from actual stored data.
+- **Disclosed convention, not fabrication**: the historical dataset's search dates are replayed forward to end "today" (see `scripts/prepare_real_dataset.py` docstring) so trailing-30-day queries have something to show — the real prices/routes/lead-times are untouched.
+- **Route priority ("Flyvora Prototype Route Priority")**: a data-driven score from Flyvora's own observation frequency — explicitly **not** an official passenger-traffic ranking.
+- **Price Index ("Flyvora Airfare Price Index — Prototype")**: an explainable route-weighted basket methodology — explicitly **not** an official CPI series.
+- **Live SerpApi collection**: fully implemented and tested (with fixture-based unit tests matching SerpApi's real documented schema), but **not live-verified** — as shipped, `.env` has no `SERPAPI_API_KEY`, so the provider runs in disabled mode. See "Live data" below.
+
+## Quick start (Docker)
 
 ```bash
 cd Backend
-cp .env.example .env
+cp .env.example .env   # fill in SERPAPI_API_KEY if you have one - optional, everything works without it
 docker compose up --build
 ```
 
-Then, in another terminal, run migrations and load some data:
-
 ```bash
 docker compose exec backend alembic upgrade head
-docker compose exec backend python scripts/ingest.py data/raw/sample_fares.csv
+docker compose exec backend python scripts/ingest.py data/raw/easemytrip_2022_prepared.csv --source-label csv-historical-real
 ```
 
+**Docker status: config reviewed and statically validated (YAML parses, env vars wired correctly) but NOT executed in the environment this was built in — no Docker daemon was available there. Verify `docker compose up --build` yourself before relying on it.**
+
 API docs: http://localhost:8000/docs
-Health check: http://localhost:8000/api/health
 
 ## Quick start (without Docker)
 
-Requires Python 3.12+ and a running PostgreSQL 16 instance.
-
 ```bash
 cd Backend
-python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env        # edit DATABASE_URL to point at your local Postgres
+cp .env.example .env
+# edit DATABASE_URL to your local Postgres
 alembic upgrade head
-python scripts/ingest.py data/raw/sample_fares.csv
+python scripts/prepare_real_dataset.py
+python scripts/ingest.py data/raw/easemytrip_2022_prepared.csv --source-label csv-historical-real
 uvicorn app.main:app --reload
 ```
 
-## CSV data contract
+## Live data (SerpApi)
 
-`scripts/ingest.py <path-to-csv>` expects these columns (case-insensitive; extra columns are ignored):
-
-| Column | Required | Notes |
-|---|---|---|
-| `date` | yes | Observation date, e.g. `2026-08-27` |
-| `origin` | yes | 3-letter IATA airport code |
-| `destination` | yes | 3-letter IATA airport code |
-| `airline` | yes | IATA code (`6E`) or name (`IndiGo`) — unrecognized carriers are still accepted and created automatically |
-| `days_to_departure` | yes | Integer ≥ 0 |
-| `price` | yes | Numeric > 0 |
-| `travel_class` | no | `Economy` / `Business` / `First Class` — defaults to `Economy` |
-| `currency` | no | Defaults to `INR` |
-
-## Real dataset included
-
-`data/raw/easemytrip_2022_real.csv` is a **genuine** ~300K-row fare dataset (airline, route, class, days-to-departure, price) scraped from EaseMyTrip, covering India's 6 busiest metro-pair routes (Delhi, Mumbai, Bangalore, Kolkata, Hyderabad, Chennai — per DGCA traffic data, these six handle ~71% of India's domestic passengers). Every airline, route, class, lead-time, and price value in it is real.
-
-**One disclosed caveat:** the source doesn't publish a per-row calendar date, only a documented 48-day collection window (11 Feb – 31 Mar 2022). `scripts/prepare_real_dataset.py` deterministically distributes rows across that real window, then **replays** the whole window forward so it ends on "today" — purely so the app's trailing-30/90-day queries have something to show live. This is a disclosed placement convention, not fabricated pricing; every row is tagged `source="csv-historical-real"` and the resulting `data_sources` record says so. Run it again any time to refresh the replay window:
+Set `SERPAPI_API_KEY` in `.env` to enable live collection. Without it, every collection attempt returns a clear `"provider-disabled mode"` status — the rest of the system (historical analytics, index, anomalies) works fully either way.
 
 ```bash
-python scripts/prepare_real_dataset.py
-python scripts/ingest.py data/raw/easemytrip_2022_prepared.csv --source-label csv-historical-real
+curl -X POST http://localhost:8000/api/collection/run
+curl http://localhost:8000/api/collection/status
+curl http://localhost:8000/api/collection/provider-health   # never returns the key itself
 ```
 
-## Running tests
+The scheduler (APScheduler, in-process — see `app/core/scheduler.py` for why not Celery/Redis) runs automatically every `COLLECTION_INTERVAL_MINUTES` (default 60) once the app starts, collecting up to `MAX_ROUTES_PER_RUN` (default 5) routes selected by `/api/collection/route-priority`.
 
-Tests run against a real Postgres database (Postgres-specific SQL like `ON CONFLICT` doesn't work against SQLite). Create a `flyvora_test` database once:
+## Key environment variables
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `SERPAPI_API_KEY` | *(empty)* | SerpApi key. Empty = provider-disabled mode. |
+| `COLLECTION_INTERVAL_MINUTES` | 60 | Scheduler interval |
+| `MAX_ROUTES_PER_RUN` | 5 | Routes collected per run (credit-conscious) |
+| `TOP_N_ROUTES` | 5 | Routes kept in the priority list |
+| `DEFAULT_CURRENCY` | INR | |
+| `DEFAULT_TRAVEL_CLASS` | 1 (Economy) | SerpApi's own 1-4 encoding |
+| `SCHEDULER_ENABLED` | true | Set false to disable automated collection entirely |
+
+## New API groups (this phase)
+
+- `POST /api/collection/run`, `GET /api/collection/status`, `GET /api/collection/provider-health`, `GET /api/collection/route-priority` — all unauthenticated by design for this prototype/demo; never expose the API key.
+- `GET /api/index`, `POST /api/index/recompute` — Flyvora Airfare Price Index (Prototype)
+- `GET /api/forecast/{route_code}` — returns `"insufficient_data"` explicitly when a route has under 14 days of history; otherwise a validated (train/holdout MAE+MAPE reported) simple-exponential-smoothing forecast.
+- `GET /api/analytics/anomalies/detail` — structured per-route anomaly output (entity, current/expected price, z-score, method, severity, `insufficient_historical_data` status for thin routes).
+
+## Testing
 
 ```bash
-createdb flyvora_test   # or: psql -c "CREATE DATABASE flyvora_test OWNER flyvora;"
+createdb flyvora_test   # once
 pytest tests/ -v
 ```
 
-## Regenerating a migration after changing a model
+48 tests as of this phase, covering CSV ingestion, the SerpApi provider (fixture-based, no live call), the collection orchestrator (including a direct test of the historical-observation rule — same route collected at two different timestamps produces two rows, not a dedup collision), route priority scoring, the price index, anomaly detection, and forecasting.
 
-```bash
-alembic revision --autogenerate -m "describe the change"
-alembic upgrade head
-```
+## Known limitations (stated plainly)
 
-## Project structure
-
-See the main repo README / Phase 1 architecture notes for the full folder-by-folder breakdown (`app/api`, `app/models`, `app/services`, `app/repositories`, etc.).
+- No live SerpApi call has actually been verified end-to-end — the `.env` shipped with this build has no key, and this environment's sandbox couldn't reach `serpapi.com` even with one. Verify on your own machine.
+- Lucknow does not appear in the real historical dataset (it only covers 6 metros) — the route-priority mechanism will not surface it until real data exists for it.
+- The price index and route priority are prototype methodologies, disclosed as such — not official statistical products.
+- Forecasting uses single exponential smoothing (flat forecast, no trend/seasonality) — appropriate for the short history currently available, not a long-term forecasting solution.
+- Docker Compose has not been executed in this environment (no daemon available) — config is reviewed and should work but wasn't run.

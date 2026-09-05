@@ -8,6 +8,7 @@ from app.schemas.analytics import (
     IndexTrendResponse,
     LeadTimeCompareResponse,
     LeadTimeCurve,
+    StructuredAnomaly,
 )
 from app.services import analytics_service
 
@@ -53,3 +54,11 @@ def lead_time_compare(
 def anomalies(db: Session = Depends(get_db)):
     """Rule-based anomaly alerts list, Overview page."""
     return analytics_service.get_anomalies(db)
+
+
+@router.get("/anomalies/detail", response_model=list[StructuredAnomaly])
+def anomalies_detail(db: Session = Depends(get_db)):
+    """Structured per-route anomaly detail: current/expected price, z-score,
+    method, and an explicit insufficient_historical_data status rather than
+    a fabricated anomaly for thinly-observed routes."""
+    return analytics_service.get_anomalies_structured(db)

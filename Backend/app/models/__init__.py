@@ -9,6 +9,8 @@ from app.models.reference import Airline, Airport  # noqa: F401
 from app.models.route import Route  # noqa: F401
 from app.models.fare_observation import FareObservation, TravelClass  # noqa: F401
 from app.models.data_quality import DataSource, IngestionJob, JobStatus, SourceStatus  # noqa: F401
+from app.models.collection import CollectionRun, CollectionRunStatus, RoutePriority  # noqa: F401
+from app.models.index_value import IndexValue  # noqa: F401
 
 __all__ = [
     "Airline",
@@ -20,4 +22,8 @@ __all__ = [
     "JobStatus",
     "DataSource",
     "SourceStatus",
+    "CollectionRun",
+    "CollectionRunStatus",
+    "RoutePriority",
+    "IndexValue",
 ]

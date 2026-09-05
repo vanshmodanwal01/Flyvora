@@ -52,7 +52,10 @@ class FareObservation(Base):
     # once Phase 2 lands a live source. Keeps the schema source-agnostic.
     source: Mapped[str] = mapped_column(String(30), default="csv")
 
-    ingestion_job_id: Mapped[int] = mapped_column(ForeignKey("ingestion_jobs.id"), index=True)
+    # Nullable: a row comes from EITHER a CSV ingestion job OR a live
+    # collection run, never both - see collection_run_id below.
+    ingestion_job_id: Mapped[int | None] = mapped_column(ForeignKey("ingestion_jobs.id"), index=True, nullable=True)
+    collection_run_id: Mapped[int | None] = mapped_column(ForeignKey("collection_runs.id"), index=True, nullable=True)
 
     # sha256 of the natural key (route, airline, class, date, lead time,
     # price, source). Unique constraint on this is what makes duplicate

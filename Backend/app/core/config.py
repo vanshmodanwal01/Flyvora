@@ -26,9 +26,33 @@ class Settings(BaseSettings):
     APP_NAME: str = "Flyvora API"
     API_PREFIX: str = "/api"
 
+    # --- Live provider (SerpApi Google Flights) ---
+    # Never logged, never returned by any endpoint, never has a default value.
+    SERPAPI_API_KEY: str = ""
+    DEFAULT_CURRENCY: str = "INR"
+    DEFAULT_TRAVEL_CLASS: int = 1  # 1=Economy, 2=Premium economy, 3=Business, 4=First (SerpApi's own encoding)
+    DEFAULT_COUNTRY: str = "IN"    # SerpApi `gl` param
+    DEFAULT_LANGUAGE: str = "en"   # SerpApi `hl` param
+    PROVIDER_TIMEOUT_SECONDS: int = 20
+    PROVIDER_MAX_RETRIES: int = 2
+
+    # --- Automated collection ---
+    COLLECTION_INTERVAL_MINUTES: int = 60
+    MAX_ROUTES_PER_RUN: int = 5
+    TOP_N_ROUTES: int = 5
+    SCHEDULER_ENABLED: bool = True
+    DEMO_MODE: bool = False
+
+    # --- Timezone ---
+    APP_TIMEZONE: str = "Asia/Kolkata"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+
+    @property
+    def serpapi_configured(self) -> bool:
+        return bool(self.SERPAPI_API_KEY.strip())
 
 
 @lru_cache

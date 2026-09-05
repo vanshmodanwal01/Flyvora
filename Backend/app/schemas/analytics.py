@@ -27,3 +27,16 @@ class AnomalyAlert(BaseModel):
     route: str
     detail: str
     severity: str                 # "High" | "Medium" | "Low"
+
+
+class StructuredAnomaly(BaseModel):
+    route: str
+    current_price: float | None
+    expected_price: float | None
+    z_score: float | None
+    severity: str | None          # "HIGH" | "MEDIUM" | None
+    is_anomaly: bool
+    status: str                   # "evaluated" | "insufficient_historical_data"
+    sample_size: int
+    detection_method: str
+    detected_at: str
